@@ -1,0 +1,163 @@
+# ===========================
+# Système d'exploitation
+# ===========================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ===========================
+# Backend - Symfony/PHP
+# ===========================
+
+# Dependencies
+/backend/vendor/
+
+# Cache et logs
+/backend/var/cache/
+/backend/var/log/
+/backend/var/sessions/
+
+# Configuration
+/backend/.env.local
+/backend/.env.local.php
+/backend/.env.*.local
+/backend/config/secrets/prod/prod.decrypt.private.php
+
+# Build artifacts
+/backend/public/bundles/
+/backend/var/
+
+# Database
+/backend/*.sqlite
+/backend/*.db
+
+# PHPUnit
+/backend/.phpunit.result.cache
+/backend/phpunit.xml
+
+# PHPStan
+/backend/phpstan.neon
+
+# ===========================
+# Frontend - React/Node.js
+# ===========================
+
+# Dependencies
+/frontend/node_modules/
+
+# Build artifacts
+/frontend/dist/
+/frontend/build/
+/frontend/.next/
+/frontend/out/
+
+# Environment variables
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.development.local
+/frontend/.env.test.local
+/frontend/.env.production.local
+
+# Logs
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/pnpm-debug.log*
+/frontend/lerna-debug.log*
+
+# Runtime data
+/frontend/pids
+/frontend/*.pid
+/frontend/*.seed
+/frontend/*.pid.lock
+
+# Coverage directory used by tools like istanbul
+/frontend/coverage/
+/frontend/*.lcov
+
+# nyc test coverage
+/frontend/.nyc_output
+
+# Vite
+/frontend/.vite/
+
+# ===========================
+# IDEs et éditeurs
+# ===========================
+
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IntelliJ IDEA / PhpStorm
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ===========================
+# Logs généraux
+# ===========================
+*.log
+logs/
+
+# ===========================
+# Temporaires
+# ===========================
+*.tmp
+*.temp
+*.cache
+
+# ===========================
+# Git
+# ===========================
+*.orig
+
+# ===========================
+# Docker (si utilisé)  
+# ===========================
+.docker/
+docker-compose.override.yml
+
+# ===========================
+# SSL Certificates
+# ===========================
+*.pem
+*.key
+*.crt
