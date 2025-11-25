@@ -1,14 +1,17 @@
 import { Link } from "react-router-dom";
-import { Users, Fuel, Settings, Eye, Calendar, Zap, Heart } from "lucide-react";
+import { Users, Fuel, Settings, Eye, Calendar, Zap, Heart, Phone } from "lucide-react";
 import { GlowEffect } from "./ModernElements";
 
 const VehicleGrid = ({ vehicles }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+      style={{ gridAutoRows: '1fr' }}
+    >
       {vehicles.map((vehicle, index) => (
         <div
           key={vehicle.id}
-          className="animate-fade-in-up"
+          className="animate-fade-in-up h-full"
           style={{ animationDelay: `${index * 0.1}s` }}
         >
           <VehicleCard vehicle={vehicle} />
@@ -44,13 +47,13 @@ const VehicleCard = ({ vehicle }) => {
 
   return (
     <GlowEffect color="purple">
-      <div className="card group perspective-1000">
+      <div className="card group perspective-1000 flex flex-col min-h-[650px]">
         {/* Modern Image Container */}
-        <div className="relative overflow-hidden rounded-t-2xl">
+        <div className="relative overflow-hidden rounded-t-2xl flex-shrink-0">
           <img
             src={imageUrl}
             alt={`${brand} ${model}`}
-            className="w-full h-72 object-cover group-hover:scale-110 transition-transform duration-700"
+            className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-700"
           />
 
           {/* Gradient Overlay */}
@@ -104,17 +107,17 @@ const VehicleCard = ({ vehicle }) => {
         </div>
 
         {/* Modern Content */}
-        <div className="p-8 relative">
+        <div className="p-6 relative flex-1 flex flex-col">
           {/* Header with gradient */}
-          <div className="mb-6">
-            <h3 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors">
+          <div className="mb-4">
+            <h3 className="text-2xl font-bold text-gray-900 mb-1 group-hover:text-primary-600 transition-colors">
               {brand} <span className="text-gradient">{model}</span>
             </h3>
-            <p className="text-gray-500 font-medium">Année {year}</p>
+            <p className="text-gray-500 font-medium text-sm">Année {year}</p>
           </div>
 
           {/* Modern Vehicle Specs */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-3 gap-3 mb-4">
             {[
               { icon: Users, value: `${seats} places`, color: "text-blue-500" },
               { icon: Fuel, value: fuelType, color: "text-green-500" },
@@ -122,7 +125,7 @@ const VehicleCard = ({ vehicle }) => {
             ].map((spec, index) => (
               <div
                 key={index}
-                className="flex flex-col items-center p-3 glass-morphism rounded-xl group-hover:scale-105 transition-transform duration-300"
+                className="flex flex-col items-center p-2.5 glass-morphism rounded-xl group-hover:scale-105 transition-transform duration-300"
               >
                 <spec.icon className={`h-5 w-5 ${spec.color} mb-1`} />
                 <span className="text-xs text-gray-600 font-medium text-center">
@@ -133,18 +136,18 @@ const VehicleCard = ({ vehicle }) => {
           </div>
 
           {/* Modern Features */}
-          <div className="mb-6">
+          <div>
             <div className="flex flex-wrap gap-2">
               {features.slice(0, 2).map((feature, index) => (
                 <span
                   key={index}
-                  className="inline-block px-3 py-1 text-xs bg-gradient-to-r from-primary-100 to-purple-100 text-primary-700 rounded-full font-medium border border-primary-200/50"
+                  className="inline-block px-2.5 py-1 text-xs bg-gradient-to-r from-primary-100 to-purple-100 text-primary-700 rounded-full font-medium border border-primary-200/50"
                 >
                   {feature}
                 </span>
               ))}
               {features.length > 2 && (
-                <span className="inline-block px-3 py-1 text-xs bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 rounded-full font-medium">
+                <span className="inline-block px-2.5 py-1 text-xs bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 rounded-full font-medium">
                   +{features.length - 2} équipements
                 </span>
               )}
@@ -152,30 +155,47 @@ const VehicleCard = ({ vehicle }) => {
           </div>
 
           {/* Modern Price and Actions */}
-          <div className="flex items-center justify-between">
-            <div className="group-hover:scale-110 transition-transform duration-300">
-              <span className="text-3xl font-black text-gradient bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
-                {pricePerDay}€
-              </span>
-              <span className="text-gray-500 font-medium">/jour</span>
+          <div className="mt-auto">
+            {/* Prix */}
+            <div className="pb-7 border-b border-gray-100 text-center">
+              <div className="flex items-baseline gap-1 justify-center">
+                <span className="text-4xl font-black text-gradient bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent">
+                  {pricePerDay}€
+                </span>
+                <span className="text-gray-500 font-medium text-sm">/jour</span>
+              </div>
             </div>
 
-            <div className="flex space-x-2">
+            {/* Boutons */}
+            <div className="flex gap-2 pt-7">
               <Link
-                to={`/vehicle/${id}`}
-                className="glass-morphism px-4 py-2 text-sm font-semibold text-gray-700 hover:text-primary-600 rounded-xl transition-all duration-300 hover:scale-105 border border-gray-200/50"
+                //to={`/vehicle/${id}`}
+                to={`/en-travaux`}
+                className="flex-1 glass-morphism px-4 py-2.5 text-sm font-semibold text-gray-700 hover:text-primary-600 rounded-lg transition-all duration-300 hover:scale-105 border border-gray-200/50 text-center flex items-center justify-center gap-1.5"
               >
-                <Eye className="h-4 w-4 inline mr-1" />
+                <Eye className="h-4 w-4" />
                 Détails
               </Link>
-              {isAvailable && (
+              {/* Ancien bouton de réservation - commenté */}
+              {/* {isAvailable && (
                 <Link
                   to={`/booking/${id}`}
-                  className="btn-primary px-4 py-2 text-sm"
+                  className="flex-1 btn-primary px-4 py-2.5 text-sm !rounded-lg text-center flex items-center justify-center gap-1.5"
                 >
-                  <Calendar className="h-4 w-4 inline mr-1" />
+                  <Calendar className="h-4 w-4" />
                   Réserver
                 </Link>
+              )} */}
+
+              {/* Nouveau bouton d'appel téléphonique */}
+              {isAvailable && (
+                <a
+                  href="tel:0000000000"
+                  className="flex-1 btn-primary px-4 py-2.5 text-sm !rounded-lg text-center flex items-center justify-center gap-1.5"
+                >
+                  <Phone className="h-4 w-4" />
+                  Réserver
+                </a>
               )}
             </div>
           </div>

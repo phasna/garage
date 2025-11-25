@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Car, Phone, MapPin, Sparkles } from "lucide-react";
-import { FloatingParticles } from "./ModernElements";
+import { Menu, X, Car, Phone } from "lucide-react";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,58 +18,20 @@ const Header = () => {
 
   const navigation = [
     { name: "Accueil", href: "/", current: location.pathname === "/" },
-    { name: "Véhicules", href: "/#vehicles", current: false },
     {
       name: "À propos",
-      href: "/about",
-      current: location.pathname === "/about",
+      href: "/en-travaux",
+      current: location.pathname === "/en-travaux" || location.pathname === "/about",
     },
     {
       name: "Contact",
-      href: "/contact",
+      href: "/en-travaux",
       current: location.pathname === "/contact",
     },
   ];
 
   return (
     <>
-      {/* Modern Top Bar */}
-      <div className="relative bg-gradient-to-r from-primary-900 via-primary-800 to-purple-900 text-white py-3 hidden md:block overflow-hidden">
-        <FloatingParticles count={8} />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-2 group">
-                <Phone className="h-4 w-4 text-yellow-300 group-hover:animate-bounce" />
-                <span className="hover:text-yellow-300 transition-colors duration-300">
-                  01 23 45 67 89
-                </span>
-              </div>
-              <div className="flex items-center space-x-2 group">
-                <MapPin className="h-4 w-4 text-green-300 group-hover:animate-pulse" />
-                <span className="hover:text-green-300 transition-colors duration-300">
-                  123 Rue de la Location, 75001 Paris
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2 glass-morphism px-3 py-1 rounded-full">
-              <Sparkles className="h-4 w-4 text-yellow-400 animate-pulse" />
-              <span className="text-yellow-100 font-medium">
-                Ouvert 24h/24 - 7j/7
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Animated background elements */}
-        <div className="absolute top-0 left-0 w-full h-full">
-          <div className="absolute top-1 left-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-ping opacity-75"></div>
-          <div className="absolute top-2 right-1/3 w-1 h-1 bg-blue-300 rounded-full animate-pulse"></div>
-          <div className="absolute bottom-1 left-1/2 w-1.5 h-1.5 bg-pink-300 rounded-full animate-bounce"></div>
-        </div>
-      </div>
-
-      {/* Main Navigation */}
       <header
         className={`sticky top-0 z-50 transition-all duration-500 ${
           isScrolled
@@ -151,15 +112,15 @@ const Header = () => {
             <div className="hidden md:flex items-center space-x-4">
               <div className="relative group">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 rounded-2xl blur opacity-20 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
-                <Link
-                  to="/#vehicles"
+                <a
+                  href="tel:0000000000"
                   className="relative btn-primary group-hover:shadow-2xl"
                 >
                   <span className="relative z-10 flex items-center">
-                    <Sparkles className="h-4 w-4 mr-2 group-hover:animate-spin" />
+                    <Phone className="h-4 w-4 mr-2" />
                     Réserver maintenant
                   </span>
-                </Link>
+                </a>
               </div>
             </div>
 
@@ -227,16 +188,16 @@ const Header = () => {
                 >
                   <div className="relative group">
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 rounded-xl blur opacity-20 group-hover:opacity-100 transition duration-500"></div>
-                    <Link
-                      to="/#vehicles"
+                    <a
+                      href="tel:0000000000"
                       onClick={() => setIsMenuOpen(false)}
                       className="relative btn-primary w-full justify-center group-hover:shadow-2xl"
                     >
                       <span className="flex items-center">
-                        <Sparkles className="h-4 w-4 mr-2 group-hover:animate-spin" />
+                        <Phone className="h-4 w-4 mr-2" />
                         Réserver maintenant
                       </span>
-                    </Link>
+                    </a>
                   </div>
                 </div>
               </nav>

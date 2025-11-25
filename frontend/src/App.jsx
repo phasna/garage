@@ -6,6 +6,7 @@ import VehicleDetails from "./pages/VehicleDetails";
 import Booking from "./pages/Booking";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import WorkInProgress from "./pages/WorkInProgress";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/booking/:id" element={<Booking />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/en-travaux" element={<WorkInProgress />} />
         </Routes>
       </main>
       <Footer />

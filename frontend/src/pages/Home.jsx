@@ -64,9 +64,8 @@ const Home = () => {
               style={{ animationDelay: "0.3s" }}
             >
               <p className="text-xl md:text-2xl text-gray-200 mb-12 max-w-4xl mx-auto leading-relaxed">
-                Des véhicules de qualité premium, des prix compétitifs et un
-                service exceptionnel. Découvrez notre flotte moderne et réservez
-                votre aventure en quelques clics.
+                Du classique au premium, votre route commence ici.<br/>
+                Réservez en quelques minutes.
               </p>
             </div>
 
@@ -88,7 +87,7 @@ const Home = () => {
               </GlowEffect>
 
               <Link
-                to="/about"
+                to="/en-travaux"
                 className="glass-morphism text-lg px-10 py-5 text-white hover:bg-white/20 border border-white/30 rounded-xl transition-all duration-300 hover:scale-105 group"
               >
                 <span className="flex items-center">
@@ -225,7 +224,7 @@ const Home = () => {
       {/* Modern Search and Filter Section */}
       <section
         id="vehicles"
-        className="py-20 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 relative"
+        className="py-20 bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 relative scroll-mt-20"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 animate-fade-in-up">
@@ -246,22 +245,35 @@ const Home = () => {
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {/* Modern Search */}
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                    <Search className="h-6 w-6 text-primary-500 group-hover:animate-pulse" />
+                <div className="group">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
+                    Véhicule recherché :{" "}
+                    <span className="text-primary-600">
+                      {searchQuery || "Aucun"}
+                    </span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                      <Search className="h-6 w-6 text-primary-500 group-hover:animate-pulse" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Rechercher par marque ou modèle..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="modern-input pl-12 h-14 text-lg"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    placeholder="Rechercher par marque ou modèle..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="modern-input pl-12 h-14 text-lg"
-                  />
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 </div>
 
                 {/* Modern Category Filter */}
-                <div className="relative group">
+                <div className="group">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
+                    Type de véhicule :{" "}
+                    <span className="text-primary-600">
+                      {categories.find((c) => c.value === selectedCategory)?.name || "Tous"}
+                    </span>
+                  </label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
@@ -273,12 +285,11 @@ const Home = () => {
                       </option>
                     ))}
                   </select>
-                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 </div>
 
                 {/* Modern Price Range */}
                 <div className="group">
-                  <label className="block text-lg font-semibold text-gray-700 mb-3 group-hover:text-primary-600 transition-colors">
+                  <label className="block text-lg font-semibold text-gray-700 mb-3">
                     Prix max:{" "}
                     <span className="text-primary-600">
                       {priceRange[1]}€/jour
@@ -309,29 +320,6 @@ const Home = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Quick filters */}
-              <div
-                className="mt-8 flex flex-wrap gap-3 justify-center animate-fade-in-up"
-                style={{ animationDelay: "0.4s" }}
-              >
-                {["Économique", "SUV", "Luxe", "Électrique"].map(
-                  (filter, index) => (
-                    <button
-                      key={filter}
-                      onClick={() => setSelectedCategory(filter)}
-                      className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                        selectedCategory === filter
-                          ? "bg-gradient-to-r from-primary-500 to-purple-500 text-white shadow-lg"
-                          : "glass-morphism text-gray-700 hover:bg-primary-100 hover:text-primary-700"
-                      } hover:scale-105`}
-                      style={{ animationDelay: `${0.1 * index}s` }}
-                    >
-                      {filter}
-                    </button>
-                  )
-                )}
-              </div>
             </div>
           </GlowEffect>
 
@@ -346,59 +334,6 @@ const Home = () => {
               </p>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="py-16 gradient-bg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                150+
-              </div>
-              <div className="text-gray-200">Véhicules disponibles</div>
-            </div>
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                10k+
-              </div>
-              <div className="text-gray-200">Clients satisfaits</div>
-            </div>
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                24/7
-              </div>
-              <div className="text-gray-200">Service client</div>
-            </div>
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-white mb-2">
-                98%
-              </div>
-              <div className="text-gray-200">Satisfaction client</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Prêt à réserver votre véhicule ?
-          </h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Rejoignez des milliers de clients satisfaits et profitez de notre
-            service exceptionnel
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#vehicles" className="btn-primary text-lg px-8 py-4">
-              Voir tous les véhicules
-            </a>
-            <Link to="/contact" className="btn-secondary text-lg px-8 py-4">
-              Nous contacter
-            </Link>
-          </div>
         </div>
       </section>
     </div>
