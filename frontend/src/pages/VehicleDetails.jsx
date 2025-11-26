@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -8,19 +9,50 @@ import {
   Calendar,
   Shield,
   Award,
+  Loader2,
 } from "lucide-react";
-import { vehicles } from "../data/vehicles";
+import { vehiclesAPI } from "../services/api";
 
 const VehicleDetails = () => {
   const { id } = useParams();
-  const vehicle = vehicles.find((v) => v.id === parseInt(id));
+  const [vehicle, setVehicle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!vehicle) {
+  useEffect(() => {
+    const fetchVehicle = async () => {
+      try {
+        setLoading(true);
+        const data = await vehiclesAPI.getOne(id);
+        setVehicle(data);
+      } catch (err) {
+        console.error("Erreur lors du chargement du véhicule:", err);
+        setError("Impossible de charger les détails du véhicule");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchVehicle();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary-600 mx-auto mb-4" />
+          <p className="text-gray-600">Chargement du véhicule...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !vehicle) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Véhicule non trouvé
+            {error || "Véhicule non trouvé"}
           </h1>
           <Link to="/" className="btn-primary">
             Retour à l'accueil
@@ -44,10 +76,10 @@ const VehicleDetails = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Image Gallery */}
-          <div>
-            <div className="card">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+          {/* Image Gallery - Sticky on scroll */}
+          <div className="lg:sticky lg:top-24 transition-all duration-300 ease-out">
+            <div className="card hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
               <img
                 src={vehicle.imageUrl}
                 alt={`${vehicle.brand} ${vehicle.model}`}
@@ -59,18 +91,9 @@ const VehicleDetails = () => {
           {/* Vehicle Info */}
           <div>
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4">
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800">
                   {vehicle.category}
-                </span>
-                <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    vehicle.isAvailable
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {vehicle.isAvailable ? "Disponible" : "Indisponible"}
                 </span>
               </div>
 
@@ -78,7 +101,9 @@ const VehicleDetails = () => {
                 {vehicle.brand} {vehicle.model}
               </h1>
               <p className="text-xl text-gray-600 mb-4">Année {vehicle.year}</p>
-              <p className="text-gray-700 mb-6">{vehicle.description}</p>
+              {vehicle.description && (
+                <p className="text-gray-700 mb-6">{vehicle.description}</p>
+              )}
             </div>
 
             {/* Specifications */}
@@ -106,20 +131,22 @@ const VehicleDetails = () => {
               </div>
             </div>
 
-            {/* Features */}
-            <div className="bg-white rounded-xl p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Équipements inclus
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {vehicle.features.map((feature, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <Check className="h-5 w-5 text-green-600" />
-                    <span className="text-gray-700">{feature}</span>
-                  </div>
-                ))}
+            {/* Features / Equipments */}
+            {vehicle.equipments && vehicle.equipments.length > 0 && (
+              <div className="bg-white rounded-xl p-6 mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Équipements inclus
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {vehicle.equipments.map((equipment, index) => (
+                    <div key={index} className="flex items-center space-x-3">
+                      <span className="text-lg">{equipment.icon}</span>
+                      <span className="text-gray-700">{equipment.name}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Guarantees */}
             <div className="bg-white rounded-xl p-6 mb-6">
@@ -167,22 +194,13 @@ const VehicleDetails = () => {
                 </div>
               </div>
 
-              {vehicle.isAvailable ? (
-                <Link
-                  to={`/booking/${vehicle.id}`}
-                  className="btn-primary w-full justify-center text-lg py-4"
-                >
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Réserver maintenant
-                </Link>
-              ) : (
-                <button
-                  disabled
-                  className="w-full bg-gray-300 text-gray-500 px-6 py-4 rounded-lg text-lg font-medium cursor-not-allowed"
-                >
-                  Indisponible
-                </button>
-              )}
+              <Link
+                to={`/booking/${vehicle.id}`}
+                className="btn-primary w-full flex items-center justify-center text-lg py-4"
+              >
+                <Calendar className="h-5 w-5 mr-2" />
+                Réserver maintenant
+              </Link>
 
               <p className="text-sm text-primary-600 text-center mt-4">
                 Réservation gratuite • Annulation jusqu'à 24h avant

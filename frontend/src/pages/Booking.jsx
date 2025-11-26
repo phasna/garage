@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Calendar,
@@ -10,11 +10,29 @@ import {
   Mail,
   MapPin,
 } from "lucide-react";
-import { vehicles } from "../data/vehicles";
+import { vehiclesAPI, rentalsAPI } from "../services/api";
+import Swal from "sweetalert2";
+import emailjs from "@emailjs/browser";
+
+// Configuration EmailJS
+const EMAILJS_SERVICE_ID = "service_0vrptcd";
+const EMAILJS_TEMPLATE_ID = "template_4hbetI9";
+const EMAILJS_PUBLIC_KEY = "afGhOSSHjdy7hZruc";
+
+// Fonction helper pour formater date + heure au format français
+const formatDateTime = (dateStr, timeStr) => {
+  // dateStr format: "2025-12-26"
+  // timeStr format: "09:00"
+  const [year, month, day] = dateStr.split('-');
+  const [hours, minutes] = timeStr.split(':');
+  return `${day}/${month}/${year} à ${hours}h${minutes}`;
+};
 
 const Booking = () => {
   const { id } = useParams();
-  const vehicle = vehicles.find((v) => v.id === parseInt(id));
+  const navigate = useNavigate();
+  const [vehicle, setVehicle] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [formData, setFormData] = useState({
     // Dates de location
@@ -53,6 +71,27 @@ const Booking = () => {
   const [totalDays, setTotalDays] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
 
+  // Charger le véhicule depuis l'API
+  useEffect(() => {
+    const loadVehicle = async () => {
+      try {
+        const data = await vehiclesAPI.getOne(id);
+        setVehicle(data);
+      } catch (error) {
+        console.error("Erreur lors du chargement du véhicule:", error);
+        await Swal.fire({
+          icon: "error",
+          title: "Erreur",
+          text: "Impossible de charger les informations du véhicule",
+        });
+        navigate("/");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadVehicle();
+  }, [id, navigate]);
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -81,11 +120,154 @@ const Booking = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Ici, on enverrait les données à un serveur
-    alert("Réservation envoyée ! Vous recevrez une confirmation par email.");
+
+    // Afficher un loader pendant l'envoi
+    Swal.fire({
+      title: "Vérification de la disponibilité...",
+      text: "Veuillez patienter",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      // Vérifier la disponibilité du véhicule
+      const availabilityCheck = await rentalsAPI.checkAvailability(
+        id,
+        formData.startDate,
+        formData.endDate
+      );
+
+      if (!availabilityCheck.available) {
+        await Swal.fire({
+          icon: "error",
+          title: "Véhicule indisponible",
+          text: "Désolé, ce véhicule n'est pas disponible pour les dates sélectionnées.",
+          confirmButtonColor: "#667eea",
+        });
+        return;
+      }
+
+      // Préparer les données de la réservation pour l'API
+      const rentalData = {
+        vehicle: `/api/vehicles/${id}`,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        birthDate: formData.birthDate,
+        drivingLicenseNumber: formData.drivingLicenseNumber,
+        address: formData.address,
+        city: formData.city,
+        postalCode: formData.postalCode,
+        country: formData.country,
+        totalPrice: totalPrice,
+        options: {
+          additionalDriver: formData.additionalDriver,
+          gps: formData.gps,
+          childSeat: formData.childSeat,
+        },
+      };
+
+      // Créer la réservation dans l'API
+      await rentalsAPI.create(rentalData);
+
+      // Préparer les données pour l'email
+      const emailData = {
+        to_email: formData.email,
+        to_name: `${formData.firstName} ${formData.lastName}`,
+        vehicle_name: `${vehicle.brand} ${vehicle.model}`,
+        start_date: formData.startDate,
+        end_date: formData.endDate,
+        start_time: formData.startTime,
+        end_time: formData.endTime,
+        total_days: totalDays,
+        total_price: totalPrice.toFixed(2),
+        phone: formData.phone,
+        address: `${formData.address}, ${formData.postalCode} ${formData.city}`,
+      };
+
+      // Tenter d'envoyer l'email (si EmailJS est configuré)
+      try {
+        if (EMAILJS_SERVICE_ID !== "YOUR_SERVICE_ID") {
+          await emailjs.send(
+            EMAILJS_SERVICE_ID,
+            EMAILJS_TEMPLATE_ID,
+            emailData,
+            EMAILJS_PUBLIC_KEY
+          );
+        }
+      } catch (emailError) {
+        console.error("Erreur lors de l'envoi de l'email:", emailError);
+        // Continue quand même, l'email n'est pas critique
+      }
+
+      // Afficher le succès avec SweetAlert2
+      await Swal.fire({
+        icon: "success",
+        title: "Réservation confirmée !",
+        html: `
+          <div style="text-align: center; font-size: 15px; color: #555;">
+            <p style="margin: 0 0 15px 0;"><strong>${vehicle.brand} ${vehicle.model}</strong></p>
+            <div style="background: #f8f9fa; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>Du</span>
+                <strong>${formatDateTime(formData.startDate, formData.startTime)}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>Au</span>
+                <strong>${formatDateTime(formData.endDate, formData.endTime)}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span>⏱️ Durée</span>
+                <strong>${totalDays} jour${totalDays > 1 ? "s" : ""}</strong>
+              </div>
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 10px 0;">
+              <div style="display: flex; justify-content: space-between; font-size: 18px;">
+                <span>💰 Total</span>
+                <strong style="color: #667eea;">${totalPrice.toFixed(2)}€</strong>
+              </div>
+            </div>
+            <p style="margin: 0; font-size: 13px; color: #888;">📧 Un email de confirmation a été envoyé à <strong>${formData.email}</strong></p>
+          </div>
+        `,
+        confirmButtonText: "Parfait !",
+        confirmButtonColor: "#667eea",
+        showCloseButton: true,
+      });
+      
+      // Rediriger vers la page d'accueil
+      navigate("/");
+    } catch (error) {
+      console.error("Erreur:", error);
+      
+      await Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: error.message || "Une erreur est survenue lors de la création de la réservation.",
+        confirmButtonColor: "#667eea",
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!vehicle) {
     return (
@@ -419,7 +601,7 @@ const Booking = () => {
                 <button
                   type="submit"
                   disabled={!formData.termsAccepted}
-                  className="w-full btn-primary text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full btn-primary text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed justify-center"
                 >
                   Confirmer la réservation
                 </button>
@@ -429,7 +611,7 @@ const Booking = () => {
 
           {/* Résumé de la commande */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-8">
+            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-24 transition-all duration-300 ease-out">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
                 Résumé de la réservation
               </h3>

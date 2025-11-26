@@ -15,97 +15,118 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Attribute\SerializedName;
-use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[ORM\Entity(repositoryClass: VehicleRepository::class)]
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Get(),
-        new Post(),
-        new Put(),
-        new Patch(),
-        new Delete()
-    ],
-    normalizationContext: ['groups' => ['vehicle:read']],
-    denormalizationContext: ['groups' => ['vehicle:write']]
+        new GetCollection(
+            uriTemplate: '/vehicles',
+            normalizationContext: ['groups' => ['vehicle:read']]
+        ),
+        new GetCollection(
+            uriTemplate: '/admin/vehicles',
+            security: "is_granted('ROLE_ADMIN')",
+            normalizationContext: ['groups' => ['vehicle:read', 'vehicle:admin']]
+        ),
+        new Get(
+            uriTemplate: '/vehicles/{id}',
+            normalizationContext: ['groups' => ['vehicle:read', 'vehicle:details']]
+        ),
+        new Get(
+            uriTemplate: '/admin/vehicles/{id}',
+            security: "is_granted('ROLE_ADMIN')",
+            normalizationContext: ['groups' => ['vehicle:read', 'vehicle:details', 'vehicle:admin']]
+        ),
+        new Post(
+            uriTemplate: '/admin/vehicles',
+            security: "is_granted('ROLE_ADMIN')",
+            denormalizationContext: ['groups' => ['vehicle:write']]
+        ),
+        new Put(
+            uriTemplate: '/admin/vehicles/{id}',
+            security: "is_granted('ROLE_ADMIN')",
+            denormalizationContext: ['groups' => ['vehicle:write']]
+        ),
+        new Patch(
+            uriTemplate: '/admin/vehicles/{id}',
+            security: "is_granted('ROLE_ADMIN')",
+            denormalizationContext: ['groups' => ['vehicle:availability']]
+        ),
+        new Delete(
+            uriTemplate: '/admin/vehicles/{id}',
+            security: "is_granted('ROLE_ADMIN')"
+        ),
+    ]
 )]
 class Vehicle
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['vehicle:read'])]
+    #[Groups(['vehicle:read', 'rental:read', 'rental:admin'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    #[Assert\NotBlank]
-    #[Assert\Length(max: 100)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'rental:read', 'rental:admin'])]
     private ?string $brand = null;
 
     #[ORM\Column(length: 100)]
-    #[Assert\NotBlank]
-    #[Assert\Length(max: 100)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'rental:read', 'rental:admin'])]
     private ?string $model = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank]
-    #[Assert\Range(min: 1900, max: 2030)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'rental:read', 'rental:admin'])]
     private ?int $year = null;
 
     #[ORM\Column(length: 50)]
-    #[Assert\NotBlank]
-    #[Assert\Choice(choices: ['essence', 'diesel', 'electrique', 'hybride'])]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'rental:read', 'rental:admin'])]
     private ?string $fuelType = null;
 
     #[ORM\Column(length: 50)]
-    #[Assert\NotBlank]
-    #[Assert\Choice(choices: ['manuelle', 'automatique'])]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'rental:read', 'rental:admin'])]
     private ?string $transmission = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank]
-    #[Assert\Range(min: 2, max: 9)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[Groups(['vehicle:read', 'vehicle:write', 'rental:read', 'rental:admin'])]
     private ?int $seats = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 8, scale: 2)]
-    #[Assert\NotBlank]
-    #[Assert\Range(min: 0)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
-    private ?string $pricePerDay = null;
+    #[ORM\Column]
+    #[Groups(['vehicle:read', 'vehicle:write', 'rental:read', 'rental:admin'])]
+    private ?float $pricePerDay = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['vehicle:read', 'vehicle:write', 'vehicle:details'])]
     private ?string $description = null;
 
-    #[ORM\Column(length: 500, nullable: true)]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[ORM\Column(length: 500)]
+    #[Groups(['vehicle:read', 'vehicle:write', 'rental:read', 'rental:admin'])]
     private ?string $imageUrl = null;
 
-    #[ORM\Column]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
-    private ?bool $isAvailable = true;
-
-    #[ORM\Column(length: 50)]
-    #[Assert\NotBlank]
-    #[Assert\Choice(choices: ['economique', 'compacte', 'berline', 'suv', 'luxe', 'utilitaire'])]
-    #[Groups(['vehicle:read', 'vehicle:write'])]
+    #[ORM\Column(length: 100)]
+    #[Groups(['vehicle:read', 'vehicle:write', 'rental:read', 'rental:admin'])]
     private ?string $category = null;
 
-    #[ORM\OneToMany(mappings: Rental::class, mappedBy: 'vehicle')]
-    #[Groups(['vehicle:read'])]
-    private Collection $rentals;
+    #[ORM\Column]
+    #[Groups(['vehicle:read', 'vehicle:write', 'vehicle:availability', 'vehicle:admin'])]
+    #[SerializedName('isAvailable')]
+    private ?bool $isAvailable = true;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write', 'vehicle:availability', 'vehicle:admin'])]
+    private ?string $unavailabilityReason = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['vehicle:read', 'vehicle:write', 'vehicle:availability', 'vehicle:admin'])]
+    private ?string $unavailabilityDetails = null;
+
+    #[ORM\ManyToMany(targetEntity: Equipment::class, inversedBy: 'vehicles')]
+    #[Groups(['vehicle:read', 'vehicle:write', 'vehicle:details'])]
+    private Collection $equipments;
 
     public function __construct()
     {
-        $this->rentals = new ArrayCollection();
+        $this->equipments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -121,6 +142,7 @@ class Vehicle
     public function setBrand(string $brand): static
     {
         $this->brand = $brand;
+
         return $this;
     }
 
@@ -132,6 +154,7 @@ class Vehicle
     public function setModel(string $model): static
     {
         $this->model = $model;
+
         return $this;
     }
 
@@ -143,6 +166,7 @@ class Vehicle
     public function setYear(int $year): static
     {
         $this->year = $year;
+
         return $this;
     }
 
@@ -154,6 +178,7 @@ class Vehicle
     public function setFuelType(string $fuelType): static
     {
         $this->fuelType = $fuelType;
+
         return $this;
     }
 
@@ -165,6 +190,7 @@ class Vehicle
     public function setTransmission(string $transmission): static
     {
         $this->transmission = $transmission;
+
         return $this;
     }
 
@@ -176,17 +202,19 @@ class Vehicle
     public function setSeats(int $seats): static
     {
         $this->seats = $seats;
+
         return $this;
     }
 
-    public function getPricePerDay(): ?string
+    public function getPricePerDay(): ?float
     {
         return $this->pricePerDay;
     }
 
-    public function setPricePerDay(string $pricePerDay): static
+    public function setPricePerDay(float $pricePerDay): static
     {
         $this->pricePerDay = $pricePerDay;
+
         return $this;
     }
 
@@ -195,9 +223,10 @@ class Vehicle
         return $this->description;
     }
 
-    public function setDescription(?string $description): static
+    public function setDescription(string $description): static
     {
         $this->description = $description;
+
         return $this;
     }
 
@@ -206,20 +235,10 @@ class Vehicle
         return $this->imageUrl;
     }
 
-    public function setImageUrl(?string $imageUrl): static
+    public function setImageUrl(string $imageUrl): static
     {
         $this->imageUrl = $imageUrl;
-        return $this;
-    }
 
-    public function isAvailable(): ?bool
-    {
-        return $this->isAvailable;
-    }
-
-    public function setAvailable(bool $isAvailable): static
-    {
-        $this->isAvailable = $isAvailable;
         return $this;
     }
 
@@ -231,36 +250,75 @@ class Vehicle
     public function setCategory(string $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function isAvailable(): ?bool
+    {
+        return $this->isAvailable;
+    }
+
+    #[Groups(['vehicle:read', 'vehicle:write', 'vehicle:availability', 'vehicle:admin'])]
+    public function getIsAvailable(): ?bool
+    {
+        return $this->isAvailable;
+    }
+
+    public function setIsAvailable(bool $isAvailable): static
+    {
+        $this->isAvailable = $isAvailable;
+
+        return $this;
+    }
+
+    public function getUnavailabilityReason(): ?string
+    {
+        return $this->unavailabilityReason;
+    }
+
+    public function setUnavailabilityReason(?string $unavailabilityReason): static
+    {
+        $this->unavailabilityReason = $unavailabilityReason;
+
+        return $this;
+    }
+
+    public function getUnavailabilityDetails(): ?string
+    {
+        return $this->unavailabilityDetails;
+    }
+
+    public function setUnavailabilityDetails(?string $unavailabilityDetails): static
+    {
+        $this->unavailabilityDetails = $unavailabilityDetails;
+
         return $this;
     }
 
     /**
-     * @return Collection<int, Rental>
+     * @return Collection<int, Equipment>
      */
-    public function getRentals(): Collection
+    public function getEquipments(): Collection
     {
-        return $this->rentals;
+        return $this->equipments;
     }
 
-    public function addRental(Rental $rental): static
+    public function addEquipment(Equipment $equipment): static
     {
-        if (!$this->rentals->contains($rental)) {
-            $this->rentals->add($rental);
-            $rental->setVehicle($this);
+        if (!$this->equipments->contains($equipment)) {
+            $this->equipments->add($equipment);
         }
 
         return $this;
     }
 
-    public function removeRental(Rental $rental): static
+    public function removeEquipment(Equipment $equipment): static
     {
-        if ($this->rentals->removeElement($rental)) {
-            // set the owning side to null (unless already changed)
-            if ($rental->getVehicle() === $this) {
-                $rental->setVehicle(null);
-            }
-        }
+        $this->equipments->removeElement($equipment);
 
         return $this;
     }
 }
+
+

@@ -3,30 +3,43 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\Repository\RentalRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RentalRepository::class)]
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Get(),
-        new Post(),
-        new Put(),
-        new Patch(),
-        new Delete()
-    ],
-    normalizationContext: ['groups' => ['rental:read']],
-    denormalizationContext: ['groups' => ['rental:write']]
+        new GetCollection(
+            uriTemplate: '/rentals',
+            normalizationContext: ['groups' => ['rental:read']]
+        ),
+        new Post(
+            uriTemplate: '/rentals',
+            denormalizationContext: ['groups' => ['rental:write']],
+            normalizationContext: ['groups' => ['rental:read']]
+        ),
+        new GetCollection(
+            uriTemplate: '/admin/rentals',
+            security: "is_granted('ROLE_ADMIN')",
+            normalizationContext: ['groups' => ['rental:read', 'rental:admin']]
+        ),
+        new Get(
+            uriTemplate: '/admin/rentals/{id}',
+            security: "is_granted('ROLE_ADMIN')",
+            normalizationContext: ['groups' => ['rental:read', 'rental:admin']]
+        ),
+        new Patch(
+            uriTemplate: '/admin/rentals/{id}',
+            security: "is_granted('ROLE_ADMIN')",
+            denormalizationContext: ['groups' => ['rental:update']]
+        ),
+    ]
 )]
 class Rental
 {
@@ -36,72 +49,87 @@ class Rental
     #[Groups(['rental:read'])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'rentals')]
+    #[ORM\ManyToOne(targetEntity: Vehicle::class)]
     #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull]
-    #[Groups(['rental:read', 'rental:write'])]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
     private ?Vehicle $vehicle = null;
 
-    #[ORM\ManyToOne(inversedBy: 'rentals')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull]
-    #[Groups(['rental:read', 'rental:write'])]
-    private ?Customer $customer = null;
-
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Assert\NotBlank]
-    #[Assert\Type("\DateTimeInterface")]
     #[Groups(['rental:read', 'rental:write'])]
     private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Assert\NotBlank]
-    #[Assert\Type("\DateTimeInterface")]
     #[Groups(['rental:read', 'rental:write'])]
     private ?\DateTimeInterface $endDate = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Assert\NotBlank]
-    #[Assert\Range(min: 0)]
+    #[ORM\Column(length: 10)]
     #[Groups(['rental:read', 'rental:write'])]
-    private ?string $totalPrice = null;
+    private ?string $startTime = null;
+
+    #[ORM\Column(length: 10)]
+    #[Groups(['rental:read', 'rental:write'])]
+    private ?string $endTime = null;
+
+    #[ORM\Column(length: 100)]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?string $firstName = null;
+
+    #[ORM\Column(length: 100)]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?string $lastName = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 20)]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?string $phone = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?\DateTimeInterface $birthDate = null;
 
     #[ORM\Column(length: 50)]
-    #[Assert\NotBlank]
-    #[Assert\Choice(choices: ['pending', 'confirmed', 'active', 'completed', 'cancelled'])]
-    #[Groups(['rental:read', 'rental:write'])]
-    private ?string $status = 'pending';
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?string $drivingLicenseNumber = null;
 
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['rental:read', 'rental:write'])]
-    private ?string $notes = null;
+    #[ORM\Column(length: 255)]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?string $address = null;
+
+    #[ORM\Column(length: 100)]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?string $city = null;
+
+    #[ORM\Column(length: 20)]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?string $postalCode = null;
+
+    #[ORM\Column(length: 100)]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?string $country = null;
+
+    #[ORM\Column]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?float $totalPrice = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    #[Groups(['rental:read', 'rental:write', 'rental:admin'])]
+    private ?array $options = null;
+
+    #[ORM\Column(length: 20)]
+    #[Groups(['rental:read', 'rental:admin', 'rental:update'])]
+    private ?string $status = 'active';
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['rental:read'])]
+    #[Groups(['rental:read', 'rental:admin'])]
     private ?\DateTimeInterface $createdAt = null;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    #[Groups(['rental:read'])]
-    private ?\DateTimeInterface $updatedAt = null;
-
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
-    #[Assert\Range(min: 0)]
-    #[Groups(['rental:read', 'rental:write'])]
-    private ?string $deposit = null;
-
-    #[ORM\Column(length: 50, nullable: true)]
-    #[Assert\Choice(choices: ['cash', 'credit_card', 'bank_transfer', 'check'])]
-    #[Groups(['rental:read', 'rental:write'])]
-    private ?string $paymentMethod = null;
-
-    #[ORM\Column(length: 50, nullable: true)]
-    #[Assert\Choice(choices: ['pending', 'paid', 'refunded', 'failed'])]
-    #[Groups(['rental:read', 'rental:write'])]
-    private ?string $paymentStatus = 'pending';
 
     public function __construct()
     {
         $this->createdAt = new \DateTime();
+        $this->status = 'active';
     }
 
     public function getId(): ?int
@@ -117,17 +145,7 @@ class Rental
     public function setVehicle(?Vehicle $vehicle): static
     {
         $this->vehicle = $vehicle;
-        return $this;
-    }
 
-    public function getCustomer(): ?Customer
-    {
-        return $this->customer;
-    }
-
-    public function setCustomer(?Customer $customer): static
-    {
-        $this->customer = $customer;
         return $this;
     }
 
@@ -139,6 +157,7 @@ class Rental
     public function setStartDate(\DateTimeInterface $startDate): static
     {
         $this->startDate = $startDate;
+
         return $this;
     }
 
@@ -150,17 +169,175 @@ class Rental
     public function setEndDate(\DateTimeInterface $endDate): static
     {
         $this->endDate = $endDate;
+
         return $this;
     }
 
-    public function getTotalPrice(): ?string
+    public function getStartTime(): ?string
+    {
+        return $this->startTime;
+    }
+
+    public function setStartTime(string $startTime): static
+    {
+        $this->startTime = $startTime;
+
+        return $this;
+    }
+
+    public function getEndTime(): ?string
+    {
+        return $this->endTime;
+    }
+
+    public function setEndTime(string $endTime): static
+    {
+        $this->endTime = $endTime;
+
+        return $this;
+    }
+
+    public function getFirstName(): ?string
+    {
+        return $this->firstName;
+    }
+
+    public function setFirstName(string $firstName): static
+    {
+        $this->firstName = $firstName;
+
+        return $this;
+    }
+
+    public function getLastName(): ?string
+    {
+        return $this->lastName;
+    }
+
+    public function setLastName(string $lastName): static
+    {
+        $this->lastName = $lastName;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(string $phone): static
+    {
+        $this->phone = $phone;
+
+        return $this;
+    }
+
+    public function getBirthDate(): ?\DateTimeInterface
+    {
+        return $this->birthDate;
+    }
+
+    public function setBirthDate(\DateTimeInterface $birthDate): static
+    {
+        $this->birthDate = $birthDate;
+
+        return $this;
+    }
+
+    public function getDrivingLicenseNumber(): ?string
+    {
+        return $this->drivingLicenseNumber;
+    }
+
+    public function setDrivingLicenseNumber(string $drivingLicenseNumber): static
+    {
+        $this->drivingLicenseNumber = $drivingLicenseNumber;
+
+        return $this;
+    }
+
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    public function setAddress(string $address): static
+    {
+        $this->address = $address;
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(string $city): static
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(string $postalCode): static
+    {
+        $this->postalCode = $postalCode;
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(string $country): static
+    {
+        $this->country = $country;
+
+        return $this;
+    }
+
+    public function getTotalPrice(): ?float
     {
         return $this->totalPrice;
     }
 
-    public function setTotalPrice(string $totalPrice): static
+    public function setTotalPrice(float $totalPrice): static
     {
         $this->totalPrice = $totalPrice;
+
+        return $this;
+    }
+
+    public function getOptions(): ?array
+    {
+        return $this->options;
+    }
+
+    public function setOptions(?array $options): static
+    {
+        $this->options = $options;
+
         return $this;
     }
 
@@ -172,17 +349,7 @@ class Rental
     public function setStatus(string $status): static
     {
         $this->status = $status;
-        return $this;
-    }
 
-    public function getNotes(): ?string
-    {
-        return $this->notes;
-    }
-
-    public function setNotes(?string $notes): static
-    {
-        $this->notes = $notes;
         return $this;
     }
 
@@ -194,64 +361,8 @@ class Rental
     public function setCreatedAt(\DateTimeInterface $createdAt): static
     {
         $this->createdAt = $createdAt;
+
         return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeInterface
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): static
-    {
-        $this->updatedAt = $updatedAt;
-        return $this;
-    }
-
-    public function getDeposit(): ?string
-    {
-        return $this->deposit;
-    }
-
-    public function setDeposit(?string $deposit): static
-    {
-        $this->deposit = $deposit;
-        return $this;
-    }
-
-    public function getPaymentMethod(): ?string
-    {
-        return $this->paymentMethod;
-    }
-
-    public function setPaymentMethod(?string $paymentMethod): static
-    {
-        $this->paymentMethod = $paymentMethod;
-        return $this;
-    }
-
-    public function getPaymentStatus(): ?string
-    {
-        return $this->paymentStatus;
-    }
-
-    public function setPaymentStatus(?string $paymentStatus): static
-    {
-        $this->paymentStatus = $paymentStatus;
-        return $this;
-    }
-
-    public function getDurationInDays(): int
-    {
-        if ($this->startDate && $this->endDate) {
-            return $this->endDate->diff($this->startDate)->days + 1;
-        }
-        return 0;
-    }
-
-    #[ORM\PreUpdate]
-    public function setUpdatedAtValue(): void
-    {
-        $this->updatedAt = new \DateTime();
     }
 }
+

@@ -1,28 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
-// Composant pour les particules flottantes
-export const FloatingParticles = ({ count = 20 }) => {
-  const [particles, setParticles] = useState([]);
-
-  useEffect(() => {
-    const newParticles = Array.from({ length: count }, (_, i) => ({
+// Composant pour les particules flottantes - Optimisé GPU
+export const FloatingParticles = ({ count = 15 }) => {
+  // Utiliser useMemo pour éviter les recalculs inutiles
+  const particles = useMemo(() => 
+    Array.from({ length: count }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
       size: Math.random() * 4 + 2,
-      duration: Math.random() * 3 + 2,
+      duration: Math.random() * 4 + 3, // Ralenti pour moins de repaints
       delay: Math.random() * 2,
-      opacity: Math.random() * 0.5 + 0.1,
-    }));
-    setParticles(newParticles);
-  }, [count]);
+      opacity: Math.random() * 0.4 + 0.1,
+    })),
+    [count]
+  );
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {particles.map((particle) => (
         <div
           key={particle.id}
-          className="absolute rounded-full bg-white/20 animate-float"
+          className="absolute rounded-full bg-white/20 animate-float-optimized"
           style={{
             left: `${particle.x}%`,
             top: `${particle.y}%`,
@@ -31,6 +30,8 @@ export const FloatingParticles = ({ count = 20 }) => {
             animationDuration: `${particle.duration}s`,
             animationDelay: `${particle.delay}s`,
             opacity: particle.opacity,
+            willChange: 'transform',
+            transform: 'translateZ(0)',
           }}
         />
       ))}
@@ -38,27 +39,30 @@ export const FloatingParticles = ({ count = 20 }) => {
   );
 };
 
-// Composant pour les formes géométriques décoratives
+// Composant pour les formes géométriques décoratives - Optimisé (sans blur coûteux)
 export const GeometricShapes = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Cercles flottants */}
-      <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full animate-float blur-xl" />
-      <div
-        className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-br from-pink-400/20 to-yellow-400/20 rounded-full animate-float blur-lg"
-        style={{ animationDelay: "1s" }}
+      {/* Cercles flottants - remplacé blur par opacité gradient */}
+      <div 
+        className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-blue-400/15 to-purple-400/10 rounded-full animate-float-optimized"
+        style={{ willChange: 'transform' }}
       />
       <div
-        className="absolute bottom-32 left-20 w-40 h-40 bg-gradient-to-br from-green-400/20 to-blue-400/20 rounded-full animate-float blur-2xl"
-        style={{ animationDelay: "2s" }}
+        className="absolute top-40 right-20 w-24 h-24 bg-gradient-to-br from-pink-400/15 to-yellow-400/10 rounded-full animate-float-optimized"
+        style={{ animationDelay: "1s", willChange: 'transform' }}
+      />
+      <div
+        className="absolute bottom-32 left-20 w-40 h-40 bg-gradient-to-br from-green-400/10 to-blue-400/10 rounded-full animate-float-optimized"
+        style={{ animationDelay: "2s", willChange: 'transform' }}
       />
 
-      {/* Formes polygonales */}
+      {/* Formes polygonales - spin ralenti, pulse supprimé */}
       <div
-        className="absolute top-60 right-40 w-16 h-16 bg-gradient-to-br from-purple-400/30 to-pink-400/30 transform rotate-45 animate-spin"
-        style={{ animationDuration: "20s" }}
+        className="absolute top-60 right-40 w-16 h-16 bg-gradient-to-br from-purple-400/20 to-pink-400/20 transform rotate-45 animate-spin-slow"
+        style={{ willChange: 'transform' }}
       />
-      <div className="absolute bottom-20 right-10 w-20 h-20 bg-gradient-to-br from-blue-400/25 to-cyan-400/25 transform rotate-12 animate-pulse" />
+      <div className="absolute bottom-20 right-10 w-20 h-20 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 transform rotate-12 opacity-60" />
     </div>
   );
 };
@@ -194,19 +198,16 @@ export const AnimatedBubbles = ({ count = 10 }) => {
   );
 };
 
-// Composant pour l'effet de halo lumineux
-export const GlowEffect = ({ children, color = "blue" }) => {
-  const glowColors = {
-    blue: "shadow-blue-500/50",
-    purple: "shadow-purple-500/50",
-    pink: "shadow-pink-500/50",
-    green: "shadow-green-500/50",
-  };
-
+// Composant pour l'effet de halo lumineux - Optimisé (shadow au lieu de blur)
+export const GlowEffect = ({ children, color = "blue", enableHover = true }) => {
   return (
-    <div className={`relative group`}>
+    <div 
+      className={`relative ${enableHover ? 'group' : ''}`}
+      style={{ willChange: 'auto' }}
+    >
       <div
-        className={`absolute -inset-1 bg-gradient-to-r from-${color}-600 to-${color}-400 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200`}
+        className={`absolute -inset-1 rounded-2xl bg-gradient-to-r from-${color}-600/20 to-${color}-400/20 opacity-0 ${enableHover ? 'group-hover:opacity-100' : ''} transition-opacity duration-300`}
+        style={{ willChange: 'opacity' }}
       />
       <div className="relative">{children}</div>
     </div>

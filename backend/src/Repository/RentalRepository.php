@@ -17,84 +17,43 @@ class RentalRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find rentals by status
+     * Vérifie si un véhicule est disponible pour une période donnée
      */
-    public function findByStatus(string $status): array
+    public function isVehicleAvailableForPeriod(int $vehicleId, \DateTimeInterface $startDate, \DateTimeInterface $endDate): bool
     {
-        return $this->createQueryBuilder('r')
-            ->where('r.status = :status')
-            ->setParameter('status', $status)
-            ->orderBy('r.createdAt', 'DESC')
+        $qb = $this->createQueryBuilder('r')
+            ->where('r.vehicle = :vehicleId')
+            ->andWhere('r.status = :status')
+            ->andWhere('(
+                (r.startDate <= :startDate AND r.endDate >= :startDate) OR
+                (r.startDate <= :endDate AND r.endDate >= :endDate) OR
+                (r.startDate >= :startDate AND r.endDate <= :endDate)
+            )')
+            ->setParameter('vehicleId', $vehicleId)
+            ->setParameter('status', 'active')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate);
+
+        $count = $qb->select('COUNT(r.id)')
             ->getQuery()
-            ->getResult();
+            ->getSingleScalarResult();
+
+        return $count === 0;
     }
 
     /**
-     * Find active rentals for a vehicle
+     * Récupère toutes les réservations actives pour un véhicule
      */
-    public function findActiveByVehicle(int $vehicleId): array
+    public function findActiveRentalsByVehicle(int $vehicleId): array
     {
         return $this->createQueryBuilder('r')
             ->where('r.vehicle = :vehicleId')
-            ->andWhere('r.status IN (:statuses)')
-            ->setParameter('vehicleId', $vehicleId)
-            ->setParameter('statuses', ['confirmed', 'active'])
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Find rentals by customer
-     */
-    public function findByCustomer(int $customerId): array
-    {
-        return $this->createQueryBuilder('r')
-            ->where('r.customer = :customerId')
-            ->setParameter('customerId', $customerId)
-            ->orderBy('r.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Find rentals ending soon (within X days)
-     */
-    public function findEndingSoon(int $days = 3): array
-    {
-        $endDate = new \DateTime();
-        $endDate->add(new \DateInterval('P' . $days . 'D'));
-
-        return $this->createQueryBuilder('r')
-            ->where('r.endDate <= :endDate')
             ->andWhere('r.status = :status')
-            ->setParameter('endDate', $endDate)
+            ->setParameter('vehicleId', $vehicleId)
             ->setParameter('status', 'active')
-            ->orderBy('r.endDate', 'ASC')
+            ->orderBy('r.startDate', 'ASC')
             ->getQuery()
             ->getResult();
-    }
-
-    /**
-     * Get rental statistics for a period
-     */
-    public function getStatistics(\DateTimeInterface $startDate, \DateTimeInterface $endDate): array
-    {
-        $qb = $this->createQueryBuilder('r');
-
-        return $qb
-            ->select([
-                'COUNT(r.id) as totalRentals',
-                'SUM(r.totalPrice) as totalRevenue',
-                'AVG(r.totalPrice) as averagePrice',
-                'COUNT(DISTINCT r.customer) as uniqueCustomers'
-            ])
-            ->where('r.createdAt >= :startDate')
-            ->andWhere('r.createdAt <= :endDate')
-            ->andWhere('r.status != :cancelledStatus')
-            ->setParameter('startDate', $startDate)
-            ->setParameter('endDate', $endDate)
-            ->setParameter('cancelledStatus', 'cancelled')
-            ->getQuery()
-            ->getSingleResult();
     }
 }
+

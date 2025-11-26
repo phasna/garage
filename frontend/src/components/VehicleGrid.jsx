@@ -1,27 +1,25 @@
 import { Link } from "react-router-dom";
-import { Users, Fuel, Settings, Eye, Calendar, Zap, Heart, Phone } from "lucide-react";
-import { GlowEffect } from "./ModernElements";
+import { Users, Fuel, Settings, Eye, Calendar, Zap, Heart } from "lucide-react";
 
-const VehicleGrid = ({ vehicles }) => {
+const VehicleGrid = ({ vehicles, showAvailabilityBadge = false }) => {
   return (
     <div
       className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
       style={{ gridAutoRows: '1fr' }}
     >
-      {vehicles.map((vehicle, index) => (
+      {vehicles.map((vehicle) => (
         <div
           key={vehicle.id}
-          className="animate-fade-in-up h-full"
-          style={{ animationDelay: `${index * 0.1}s` }}
+          className="h-full"
         >
-          <VehicleCard vehicle={vehicle} />
+          <VehicleCard vehicle={vehicle} showAvailabilityBadge={showAvailabilityBadge} />
         </div>
       ))}
     </div>
   );
 };
 
-const VehicleCard = ({ vehicle }) => {
+const VehicleCard = ({ vehicle, showAvailabilityBadge = false }) => {
   const {
     id,
     brand,
@@ -34,7 +32,6 @@ const VehicleCard = ({ vehicle }) => {
     imageUrl,
     category,
     isAvailable,
-    features,
   } = vehicle;
 
   const categoryColors = {
@@ -46,18 +43,18 @@ const VehicleCard = ({ vehicle }) => {
   };
 
   return (
-    <GlowEffect color="purple">
-      <div className="card group perspective-1000 flex flex-col min-h-[650px]">
-        {/* Modern Image Container */}
-        <div className="relative overflow-hidden rounded-t-2xl flex-shrink-0">
-          <img
-            src={imageUrl}
-            alt={`${brand} ${model}`}
-            className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-700"
-          />
+    <div className="card group flex flex-col min-h-[650px]">
+      {/* Modern Image Container */}
+      <div className="relative overflow-hidden rounded-t-2xl flex-shrink-0">
+        <img
+          src={imageUrl}
+          alt={`${brand} ${model}`}
+          className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
+        />
 
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
           {/* Modern Category Badge */}
           <div className="absolute top-4 left-4">
@@ -71,39 +68,19 @@ const VehicleCard = ({ vehicle }) => {
             </span>
           </div>
 
-          {/* Modern Availability Badge */}
-          <div className="absolute top-4 right-4">
-            <span
-              className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold backdrop-blur-md border ${
-                isAvailable
-                  ? "bg-green-500/90 text-white border-green-300/50 shadow-green-500/25"
-                  : "bg-red-500/90 text-white border-red-300/50 shadow-red-500/25"
-              } shadow-lg`}
-            >
-              <Heart className="h-3 w-3 mr-1" />
-              {isAvailable ? "Disponible" : "Indisponible"}
-            </span>
-          </div>
-
-          {/* Hover Overlay with Quick Actions */}
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-            <div className="flex space-x-3">
-              <Link
-                to={`/vehicle/${id}`}
-                className="glass-morphism p-3 rounded-full text-white hover:bg-white/20 transition-all duration-300 hover:scale-110"
+          {/* Modern Availability Badge - Only show if dates are selected */}
+          {showAvailabilityBadge && (
+            <div className="absolute top-4 right-4">
+              <span
+                className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold backdrop-blur-md border bg-green-500/90 text-white border-green-300/50 shadow-green-500/25 shadow-lg"
               >
-                <Eye className="h-5 w-5" />
-              </Link>
-              {isAvailable && (
-                <Link
-                  to={`/booking/${id}`}
-                  className="bg-gradient-to-r from-primary-500 to-purple-500 p-3 rounded-full text-white hover:shadow-2xl transition-all duration-300 hover:scale-110 animate-pulse-glow"
-                >
-                  <Calendar className="h-5 w-5" />
-                </Link>
-              )}
+                <Heart className="h-3 w-3 mr-1" />
+                Disponible
+              </span>
             </div>
-          </div>
+          )}
+
+    
         </div>
 
         {/* Modern Content */}
@@ -125,7 +102,7 @@ const VehicleCard = ({ vehicle }) => {
             ].map((spec, index) => (
               <div
                 key={index}
-                className="flex flex-col items-center p-2.5 glass-morphism rounded-xl group-hover:scale-105 transition-transform duration-300"
+                className="flex flex-col items-center p-2.5 bg-gray-50/80 rounded-xl border border-gray-100"
               >
                 <spec.icon className={`h-5 w-5 ${spec.color} mb-1`} />
                 <span className="text-xs text-gray-600 font-medium text-center">
@@ -136,20 +113,25 @@ const VehicleCard = ({ vehicle }) => {
           </div>
 
           {/* Modern Features */}
-          <div>
-            <div className="flex flex-wrap gap-2">
-              {features.slice(0, 2).map((feature, index) => (
-                <span
-                  key={index}
-                  className="inline-block px-2.5 py-1 text-xs bg-gradient-to-r from-primary-100 to-purple-100 text-primary-700 rounded-full font-medium border border-primary-200/50"
-                >
-                  {feature}
-                </span>
-              ))}
-              {features.length > 2 && (
-                <span className="inline-block px-2.5 py-1 text-xs bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 rounded-full font-medium">
-                  +{features.length - 2} équipements
-                </span>
+          <div className="overflow-x-auto scrollbar-hide pb-1">
+            <div className="flex gap-2">
+              {vehicle.equipments && vehicle.equipments.length > 0 && (
+                <>
+                  {vehicle.equipments.slice(0, 2).map((eq, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs bg-gradient-to-r from-primary-100 to-purple-100 text-primary-700 rounded-full font-medium border border-primary-200/50 whitespace-nowrap"
+                    >
+                      <span>{eq.icon}</span>
+                      {eq.name}
+                    </span>
+                  ))}
+                  {vehicle.equipments.length > 2 && (
+                    <span className="inline-block px-2.5 py-1 text-xs bg-gradient-to-r from-gray-100 to-gray-200 text-gray-600 rounded-full font-medium whitespace-nowrap">
+                      +{vehicle.equipments.length - 2} équipements
+                    </span>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -169,15 +151,13 @@ const VehicleCard = ({ vehicle }) => {
             {/* Boutons */}
             <div className="flex gap-2 pt-7">
               <Link
-                //to={`/vehicle/${id}`}
-                to={`/en-travaux`}
+                to={`/vehicle/${id}`}
                 className="flex-1 glass-morphism px-4 py-2.5 text-sm font-semibold text-gray-700 hover:text-primary-600 rounded-lg transition-all duration-300 hover:scale-105 border border-gray-200/50 text-center flex items-center justify-center gap-1.5"
               >
                 <Eye className="h-4 w-4" />
                 Détails
               </Link>
-              {/* Ancien bouton de réservation - commenté */}
-              {/* {isAvailable && (
+              {isAvailable && (
                 <Link
                   to={`/booking/${id}`}
                   className="flex-1 btn-primary px-4 py-2.5 text-sm !rounded-lg text-center flex items-center justify-center gap-1.5"
@@ -185,26 +165,14 @@ const VehicleCard = ({ vehicle }) => {
                   <Calendar className="h-4 w-4" />
                   Réserver
                 </Link>
-              )} */}
-
-              {/* Nouveau bouton d'appel téléphonique */}
-              {isAvailable && (
-                <a
-                  href="tel:0000000000"
-                  className="flex-1 btn-primary px-4 py-2.5 text-sm !rounded-lg text-center flex items-center justify-center gap-1.5"
-                >
-                  <Phone className="h-4 w-4" />
-                  Réserver
-                </a>
               )}
             </div>
           </div>
 
           {/* Animated bottom border */}
-          <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-primary-500 to-purple-500 group-hover:w-full transition-all duration-700 rounded-full"></div>
+          <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-primary-500 to-purple-500 group-hover:w-full transition-[width] duration-500 rounded-full"></div>
         </div>
       </div>
-    </GlowEffect>
   );
 };
 

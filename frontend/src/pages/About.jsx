@@ -39,22 +39,19 @@ const About = () => {
     {
       name: "Marie Dubois",
       role: "Directrice générale",
-      image:
-        "https://images.unsplash.com/photo-1494790108755-2616b612b77c?w=400&q=80",
+      image: "/images/team/member-1.jpg",
       description: "15 ans d'expérience dans l'industrie automobile",
     },
     {
       name: "Pierre Martin",
       role: "Responsable flotte",
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
+      image: "/images/team/member-2.jpg",
       description: "Expert en maintenance et qualité véhicules",
     },
     {
       name: "Sarah Johnson",
       role: "Service client",
-      image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80",
+      image: "/images/team/member-3.jpg",
       description: "Spécialisée dans l'accompagnement client",
     },
   ];
@@ -121,7 +118,7 @@ const About = () => {
             </div>
             <div>
               <img
-                src="https://images.unsplash.com/photo-1560472355-536de3962603?w=600&q=80"
+                src="/images/about/showroom.jpg"
                 alt="Notre équipe"
                 className="rounded-xl shadow-lg w-full h-96 object-cover"
               />

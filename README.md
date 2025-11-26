@@ -1,9 +1,10 @@
 # 🚗 GarageLocation - Site de Location de Véhicules
 
-Un site moderne et responsive de location de véhicules créé avec React.js et TailwindCSS.
+Un site moderne et responsive de location de véhicules avec un backend API REST complet.
 
 ## ✨ Fonctionnalités
 
+### Frontend (React)
 - **Page d'accueil attractive** avec hero section et présentation des services
 - **Catalogue de véhicules** avec filtrage par catégorie, prix et recherche
 - **Pages détaillées** pour chaque véhicule avec spécifications complètes
@@ -12,8 +13,19 @@ Un site moderne et responsive de location de véhicules créé avec React.js et 
 - **Design responsive** adapté à tous les écrans
 - **Interface moderne** avec animations et transitions fluides
 
+### Backend (Symfony API)
+- **API REST complète** avec documentation Swagger automatique
+- **Authentification JWT** sécurisée pour l'administration
+- **Gestion des véhicules** (CRUD complet)
+- **Gestion des équipements** (CRUD complet)
+- **Système de disponibilité** des véhicules avec motifs d'indisponibilité
+- **Récupération de mot de passe** avec code garage sécurisé
+- **Base de données SQLite** légère et portable
+- **API Platform 4** pour une API REST moderne
+
 ## 🛠️ Technologies utilisées
 
+### Frontend
 - **React 18** - Bibliothèque JavaScript pour l'interface utilisateur
 - **Vite** - Outil de build rapide et moderne
 - **TailwindCSS** - Framework CSS utilitaire
@@ -21,52 +33,95 @@ Un site moderne et responsive de location de véhicules créé avec React.js et 
 - **Lucide React** - Icônes modernes
 - **PostCSS & Autoprefixer** - Traitement CSS
 
+### Backend
+- **Symfony 7.1** - Framework PHP moderne
+- **API Platform 4.1** - Framework API REST
+- **SQLite** - Base de données légère
+- **JWT Authentication** - Authentification sécurisée
+- **Doctrine ORM** - Gestion de la base de données
+
 ## 📁 Structure du projet
 
 ```
-frontend/
-├── public/
-│   ├── index.html
-│   └── vite.svg
-├── src/
-│   ├── components/
-│   │   ├── Header.jsx
-│   │   ├── Footer.jsx
-│   │   └── VehicleGrid.jsx
-│   ├── pages/
-│   │   ├── Home.jsx
-│   │   ├── VehicleDetails.jsx
-│   │   ├── Booking.jsx
-│   │   ├── About.jsx
-│   │   └── Contact.jsx
-│   ├── data/
-│   │   └── vehicles.js
-│   ├── App.jsx
-│   ├── main.jsx
-│   └── index.css
-├── package.json
-├── vite.config.js
-├── tailwind.config.js
-└── postcss.config.js
+garage/
+├── frontend/                 # Application React
+│   ├── src/
+│   │   ├── components/      # Composants réutilisables
+│   │   ├── pages/           # Pages de l'application
+│   │   └── data/            # Données statiques
+│   └── CLAUDE.md           # Documentation frontend
+│
+└── backend/                 # API Symfony
+    ├── src/
+    │   ├── Entity/          # Entités Doctrine
+    │   │   ├── User.php
+    │   │   ├── Vehicle.php
+    │   │   └── Equipment.php
+    │   ├── Repository/      # Repositories Doctrine
+    │   ├── Controller/      # Contrôleurs API
+    │   │   ├── AuthController.php
+    │   │   └── PublicApiController.php
+    │   └── Command/         # Commandes CLI
+    │       └── InitDataCommand.php
+    ├── config/              # Configuration Symfony
+    ├── var/
+    │   └── data.db         # Base de données SQLite
+    └── CLAUDE.md           # Documentation API complète
 ```
 
 ## 🚀 Installation et démarrage
 
 ### Prérequis
 
-- Node.js (version 16 ou supérieure)
-- npm ou yarn
+- **Node.js** (version 16 ou supérieure)
+- **PHP** 8.2 ou supérieur
+- **Composer** (gestionnaire de dépendances PHP)
+- **Symfony CLI** (optionnel mais recommandé)
 
-### Installation
+### Installation du Backend
 
-1. **Cloner le projet**
+1. **Naviguer vers le dossier backend**
 
    ```bash
-   git clone [url-du-repo]
-   cd "Garage Dev/frontend"
+   cd garage/backend
    ```
 
-2. **Installer les dépendances**
+2. **Installer les dépendances PHP**
+
+   ```bash
+   composer install
+   ```
+
+3. **Initialiser la base de données avec les données de démonstration**
+
+   ```bash
+   php bin/console app:init-data --with-vehicles
+   ```
+
+   Cela créera :
+   - Un compte admin (username: `admin`, password: `admin123`)
+   - 13 équipements de base
+   - 12 véhicules de démonstration
+
+4. **Lancer le serveur Symfony**
+
+   ```bash
+   symfony server:start
+   # ou
+   php -S localhost:8000 -t public
+   ```
+
+   L'API sera accessible à : `http://localhost:8000/api`
+
+### Installation du Frontend
+
+1. **Naviguer vers le dossier frontend**
+
+   ```bash
+   cd garage/frontend
+   ```
+
+2. **Installer les dépendances Node**
 
    ```bash
    npm install
@@ -78,14 +133,58 @@ frontend/
    npm run dev
    ```
 
-4. **Ouvrir l'application**
-   - L'application sera accessible à l'adresse : `http://localhost:3000`
+   L'application sera accessible à : `http://localhost:5173`
 
 ### Scripts disponibles
 
-- `npm run dev` - Lance le serveur de développement
+#### Backend
+- `php bin/console app:init-data` - Initialiser les données
+- `php bin/console app:init-data --with-vehicles` - Initialiser avec véhicules
+- `php bin/console app:init-data --reset` - Réinitialiser toutes les données
+- `symfony server:start` - Démarrer le serveur
+
+#### Frontend
+- `npm run dev` - Serveur de développement
 - `npm run build` - Build de production
-- `npm run preview` - Prévisualisation du build de production
+- `npm run preview` - Prévisualisation du build
+
+### Configuration
+
+#### Backend (.env)
+```env
+DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"
+GARAGE_CODE=GARAGE2024  # Code pour mot de passe oublié
+CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
+```
+
+### Documentation API
+
+- **Documentation interactive Swagger** : `http://localhost:8000/api`
+- **Documentation complète** : Voir `backend/CLAUDE.md`
+
+## 🔌 Endpoints API principaux
+
+### Authentification
+- `POST /api/login` - Connexion admin
+- `POST /api/admin/forgot-password` - Vérifier code garage
+- `PUT /api/admin/reset-password` - Réinitialiser mot de passe
+
+### API Publique
+- `GET /api/vehicles` - Liste des véhicules
+- `GET /api/vehicles/{id}` - Détails d'un véhicule
+- `GET /api/equipments` - Liste des équipements
+- `GET /api/categories` - Liste des catégories
+
+### API Admin (JWT requis)
+- `GET /api/admin/vehicles` - Liste admin des véhicules
+- `POST /api/admin/vehicles` - Créer un véhicule
+- `PUT /api/admin/vehicles/{id}` - Modifier un véhicule
+- `PATCH /api/admin/vehicles/{id}/availability` - Changer disponibilité
+- `DELETE /api/admin/vehicles/{id}` - Supprimer un véhicule
+- `GET /api/admin/equipments` - Liste admin des équipements
+- `POST /api/admin/equipments` - Créer un équipement
+
+Voir `backend/CLAUDE.md` pour la documentation complète avec exemples de requêtes.
 
 ## 🎨 Fonctionnalités détaillées
 
@@ -142,16 +241,31 @@ frontend/
 - **Tablet** (768px - 1024px) : Layout 2 colonnes, navigation complète
 - **Desktop** (> 1024px) : Layout 3 colonnes, toutes les fonctionnalités
 
+## ✅ Fonctionnalités réalisées
+
+- [x] **Intégration d'une vraie API backend** (Symfony + API Platform)
+- [x] **Système d'authentification admin** avec JWT
+- [x] **Gestion complète des véhicules** via API
+- [x] **Gestion des équipements** via API
+- [x] **Système de disponibilité** des véhicules
+- [x] **Récupération de mot de passe** sécurisée
+- [x] **Base de données SQLite** avec migrations
+- [x] **Documentation API** Swagger automatique
+
 ## 🚧 Améliorations possibles
 
-- [ ] Intégration d'une vraie API backend
-- [ ] Système d'authentification utilisateur
+- [ ] Interface d'administration frontend (React)
+- [ ] Connexion frontend avec le backend API
+- [ ] Système d'authentification client
+- [ ] Système de réservation complet avec validation
 - [ ] Paiement en ligne
 - [ ] Géolocalisation et cartes interactives
-- [ ] Système de notifications
+- [ ] Système de notifications par email
 - [ ] Mode sombre
-- [ ] Tests automatisés
+- [ ] Tests automatisés (PHPUnit, Jest)
 - [ ] Optimisation SEO avancée
+- [ ] Upload d'images pour les véhicules
+- [ ] Génération de contrats PDF
 
 ## 📄 Licence
 

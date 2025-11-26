@@ -41,12 +41,12 @@ const Header = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
-            className={`flex justify-between items-center transition-all duration-300 ${
+            className={`flex items-center justify-between transition-all duration-300 ${
               isScrolled ? "py-2" : "py-4"
             }`}
           >
             {/* Modern Logo */}
-            <Link to="/" className="flex items-center space-x-3 group">
+            <Link to="/" className="flex items-center space-x-3 group flex-shrink-0">
               <div className="relative">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary-600 to-purple-600 rounded-xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200 animate-pulse-glow"></div>
                 <div className="relative bg-gradient-to-br from-primary-600 to-primary-700 p-3 rounded-xl shadow-lg group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
@@ -72,7 +72,7 @@ const Header = () => {
             </Link>
 
             {/* Modern Desktop Navigation */}
-            <nav className="hidden md:flex space-x-2">
+            <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 space-x-2">
               {navigation.map((item, index) => (
                 <Link
                   key={item.name}
@@ -108,21 +108,8 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* Modern CTA Button */}
-            <div className="hidden md:flex items-center space-x-4">
-              <div className="relative group">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 rounded-2xl blur opacity-20 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
-                <a
-                  href="tel:0000000000"
-                  className="relative btn-primary group-hover:shadow-2xl"
-                >
-                  <span className="relative z-10 flex items-center">
-                    <Phone className="h-4 w-4 mr-2" />
-                    Réserver maintenant
-                  </span>
-                </a>
-              </div>
-            </div>
+            {/* Spacer invisible pour équilibrer le layout (même largeur que le logo) */}
+            <div className="hidden md:block flex-shrink-0" style={{ width: '250px' }}></div>
 
             {/* Modern Mobile menu button */}
             <div className="md:hidden">
